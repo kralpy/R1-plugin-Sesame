@@ -17,6 +17,16 @@
 </head>
 <body>
   <script>
+    // Vraag toestemming om de microfoon te gebruiken
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        console.log("Microphone access granted.");
+        // Je kunt de stream hier doorgeven aan de site indien nodig
+      })
+      .catch(err => {
+        console.error("Microphone access denied:", err);
+      });
+
     // Redirect direct naar de site
     window.location.href = "https://app.sesame.com/?_gl=1*v4wwwi*_ga*MTA2NDg2ODYwMy4xNzU0NTEyNTQ4*_ga_ZZLPJBMBEN*czE3NTgxMTc3OTckbzMkZzAkdDE3NTgxMTc3OTckajYwJGwwJGgw";
   </script>
