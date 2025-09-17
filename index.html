@@ -10,49 +10,57 @@
       padding: 0;
       width: 240px;
       height: 282px;
+      background: #000;
       overflow: hidden;
-      background-color: #000;
     }
-    #loader {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 16px;
-    }
-    #sesameFrame {
+    iframe {
       width: 100%;
       height: 100%;
       border: none;
-      display: none;
     }
   </style>
 </head>
 <body>
-  <div id="loader">Requesting Microphone Access...</div>
   <iframe id="sesameFrame" allow="microphone"></iframe>
 
   <script>
-    const loader = document.getElementById('loader');
-    const iframe = document.getElementById('sesameFrame');
-    const sesameURL = "https://app.sesame.com/?_gl=1*v4wwwi*_ga*MTA2NDg2ODYwMy4xNzU0NTEyNTQ4*_ga_ZZLPJBMBEN*czE3NTgxMTc3OTckbzMkZzAkdDE3NTgxMTc3OTckajYwJGwwJGgw";
+    const sesameURL = "https://app.sesame.com/";
+    const frame = document.getElementById("sesameFrame");
 
-    async function initMic() {
+    async function loadSesame() {
       try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Mic access granted, load iframe
-        loader.style.display = 'none';
-        iframe.style.display = 'block';
-        iframe.src = sesameURL;
-      } catch (err) {
-        loader.textContent = "Microphone access denied. Please enable mic in system settings.";
-        console.error("Mic access error:", err);
+        // Check for saved session
+        const savedURL = await window.creationStorage.secure.getItem(btoa("sesame_session"));
+        if(savedURL) {
+          frame.src = atob(savedURL);
+        } else {
+          frame.src = sesameURL;
+        }
+      } catch(e) {
+        frame.src = sesameURL;
       }
     }
 
-    initMic();
+    loadSesame();
+
+    // Listen for iframe messages to store session
+    window.addEventListener("message", async (e) => {
+      if(e.data && e.data.sesameSession) {
+        await window.creationStorage.secure.setItem(
+          btoa("sesame_session"),
+          btoa(e.data.sesameSession)
+        );
+      }
+    });
+
+    // Request microphone permission
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        console.log("Microphone access granted.");
+      })
+      .catch(err => {
+        console.error("Microphone access denied:", err);
+      });
   </script>
 </body>
 </html>
